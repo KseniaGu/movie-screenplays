@@ -110,6 +110,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# JetBrains IDE
+.idea/
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -127,3 +130,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Huge data directories
+data/movie_screenplay_dataset/movie_characters/bert_anno_character_texts
+data/movie_screenplay_dataset/movie_characters/screenpy_anno_movie_character_texts
+data/movie_screenplay_dataset/screenplay_data
