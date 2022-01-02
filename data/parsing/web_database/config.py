@@ -2,9 +2,7 @@ from enum import Enum
 
 
 class WebDatabaseConfig:
-    sources_names = Enum(
-        'sources', 'imsdb scriptorama simplyscripts gotothehistory dailyscript awesomefilm slug horror scriptologist '
-                   'sfy scifi dailyactor screenplays_online thescriptlab onscreen selling reddit')
+    sources_names = ...
     scripts_dir = 'data/screenplay_data/data/raw_texts'
     scriptorama = {
         'table_links': (
