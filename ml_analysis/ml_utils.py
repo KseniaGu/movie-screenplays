@@ -5,18 +5,6 @@ import pandas as pd
 import seaborn as sns
 
 
-def remove_element_names_old(self, row):
-    if row.startswith(self.config['screenplay_elements'].text.name + ':'):
-        row = row[len(self.config['screenplay_elements'].text.name) + 1:]
-    elif row.startswith(self.config['screenplay_elements'].dialog.name + ':'):
-        row = row[len(self.config['screenplay_elements'].dialog.name) + 1:]
-    elif row.startswith(self.config['screenplay_elements'].scene_heading.name + ':'):
-        row = row[len(self.config['screenplay_elements'].scene_heading.name) + 1:]
-    elif row.startswith(self.config['screenplay_elements'].speaker_heading.name + ':'):
-        row = row[len(self.config['screenplay_elements'].speaker_heading.name) + 1:]
-    return row.strip()
-
-
 def remove_element_names(element_names, text):
     for name in sorted(element_names, key=len, reverse=True):
         if text.startswith(name + ':'):

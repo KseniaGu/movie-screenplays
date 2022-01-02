@@ -1,7 +1,5 @@
 import os
 import random
-import psutil
-from psutil._common import bytes2human
 from collections import OrderedDict
 import torch
 from tqdm import tqdm
@@ -11,7 +9,7 @@ from ml_analysis.datasets.base_preprocessor import BasePreprocessor
 from transformers import BertTokenizerFast
 
 from utils.common import read_file
-from ml_analysis.utils import remove_element_names
+from ml_analysis.ml_utils import remove_element_names
 from ml_analysis.datasets.base_dataset import BaseDataset
 
 
@@ -147,12 +145,3 @@ class ScreenplayDataset(BaseDataset):
         self.get_labels()
         self.tokenize()
         self.split()
-
-
-if __name__ == '__main__':
-    tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
-    preprocessor = BasePreprocessor()
-    from ml_analysis.config import MovieDataConfig
-
-    SD = ScreenplayDataset(tokenizer, MovieDataConfig, 'movie_script_awards', preprocessor)
-    SD.prepare_dataset()

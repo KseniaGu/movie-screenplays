@@ -11,10 +11,8 @@ from tqdm import tqdm
 from time import time
 from shutil import copytree
 
-from ml_analysis.utils import format_time, plot_conf_matr
+from ml_analysis.ml_utils import format_time, plot_conf_matr
 
-
-# TODO: add set_seed function
 
 class Trainer:
     def __init__(self, config, model, train_dataloader, validation_dataloader):
@@ -39,7 +37,9 @@ class Trainer:
     def log_training_params(self, optimizer_config):
         for key, val in optimizer_config.items():
             mlflow.log_param(key, val)
-        mlflow.log_param('num_classes', self.config['train']['num_classes'])
+        task = self.config['train']['task']
+        nrof_classes = len(self.config['train']['classes_names'][task])
+        mlflow.log_param('nrof_classes', nrof_classes)
 
     def log_metrics(self, metrics_dict, elapsed_time):
         training_status_msg = []
@@ -55,7 +55,7 @@ class Trainer:
 
     def _create_optimizer(self):
         optimizer = self.config['train']['optimizer']
-        optimizer_config = self.config['train']['optim'][optimizer]
+        optimizer_config = self.config['train']['optimizer_params'][optimizer]
         self.log_training_params(optimizer_config)
 
         if optimizer == AdamW.__name__:
@@ -76,6 +76,8 @@ class Trainer:
             raise Exception('Unknown optimizer')
 
     def save_model(self, step=None):
+        if not os.path.exists(self.config['paths']['ckpt_dir']):
+            os.makedirs(self.config['paths']['ckpt_dir'])
         torch.save(
             {
                 "model": self.model.state_dict(),
@@ -85,7 +87,9 @@ class Trainer:
             },
             os.path.join(
                 self.config['paths']['ckpt_dir'],
-                self.config['train']['exp_name'] + '_checkpoint' + ('_' + str(step) if step else '')))
+                self.config['train']['task'] + '_' +
+                self.config['train']['exp_name'] + '_' +
+                'checkpoint' + ('_' + str(step) if step else '')))
         print('Model saved...')
 
     def load_model(self):
@@ -107,7 +111,7 @@ class Trainer:
         print("Model loaded...")
 
     def training_step(self, batch, cur_loss, tr_losses, predicts, trues, nrof_steps, nrof_samples, start_time):
-        b_labels = batch['labels']
+        b_labels = batch['labels'].to(self.config['train']['device'])
 
         self.model.zero_grad()
         output = self.model(batch)
@@ -271,9 +275,10 @@ class Trainer:
 
         self.log_metrics(val_metrics_dict, time() - start_time)
 
+        classes_names = self.config['train']['classes_names'][self.config['train']['task_name']]
         plot_conf_matr(trues, predicts, title=str(self.global_step) + '_',
-                       nrof_classes=self.config['train']['num_classes'],
-                       classes_names=self.config['train']['classes_names'][self.config['train']['task_name']])
+                       nrof_classes=len(classes_names),
+                       classes_names=classes_names)
         self.log_additional_data(str(self.global_step) + '_conf_matrix.png')
 
         print('Results examples:\nTrues: {}\nPredicts:{}'.format(trues, predicts))

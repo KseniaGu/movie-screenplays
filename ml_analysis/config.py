@@ -11,7 +11,9 @@ MovieDataConfig = {
             'character_texts_dir': '/home/ksen/PycharmProjects/movie-screenplays/data/movie_screenplay_dataset/movie_characters/bert_anno_character_texts',
             'character_labels_dir': '/home/ksen/PycharmProjects/movie-screenplays/data/movie_screenplay_dataset/movie_characters/labels',
             'imdb_chars_train_data': '/home/ksen/PycharmProjects/movie-screenplays/data/movie_screenplay_dataset/movie_characters/tokenized/imdb_chars_train_data.pickle',
-            'logs_dir': '/home/ksen/PycharmProjects/movie-screenplays/ml_analysis/logs'
+            'logs_dir': '/home/ksen/PycharmProjects/movie-screenplays/ml_analysis/logs',
+            'mlruns_dir': './mlruns/',
+            'ckpt_dir': '/home/ksen/PycharmProjects/movie-screenplays/ml_analysis/logs/ckpts/'
         },
     'tokenization':
         {
@@ -40,6 +42,8 @@ MovieDataConfig = {
         },
     'train':
         {
+            'task': 'movie_script_awards',
+            'exp_name': '100_scenes_average',
             'to_validate': False,
             'validation_step': 20,
             'batch_size':
@@ -48,7 +52,6 @@ MovieDataConfig = {
                     'val': 4,
                     'test': 4
                 },
-            'num_classes': 2,  # from [2, 13]
             'test_val_split': 0.2,
             'dropout': 0.1,
             'optimizer': 'AdamW',
@@ -70,7 +73,6 @@ MovieDataConfig = {
             'train_logging_step': 10,
             'metric_eval_examples_num': 50,
             'nrof_epochs': 2,
-            'exp_name': 'script_awards_classification_100_scenes_average',
             'task_name': 'script_awards',
             'classes_names':
                 {
@@ -82,6 +84,18 @@ MovieDataConfig = {
                     'movie_script_awards':
                         [
                             'Not nominated', 'Nominated'
+                        ],
+                    'character_role':
+                        [
+                            'Main', 'Minor'
+                        ],
+                    'character_gender':
+                        [
+                            'Female', 'Male'
+                        ],
+                    'next_scene_prediction':
+                        [
+                            'Next', 'Not next'
                         ]
                 },
             'use_intermediate_weights': False,
@@ -92,5 +106,5 @@ MovieDataConfig = {
             'seed': 11
         },
     'screenplay_elements': Enum('screenplay_elements', 'scene_heading speaker_heading dialog text'),
-    'tasks': Enum('tasks', 'character_role character_gender movie_script_awards movie_genre')
+    'tasks': Enum('tasks', 'character_role character_gender movie_script_awards movie_genre next_scene_prediction')
 }

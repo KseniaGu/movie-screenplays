@@ -4,7 +4,7 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from utils.common import read_file, write_file
 from sklearn.model_selection import train_test_split
-from ml_analysis.utils import remove_element_names
+from ml_analysis.ml_utils import remove_element_names
 from transformers import BertTokenizerFast
 from ml_analysis.datasets.base_preprocessor import BasePreprocessor
 from ml_analysis.datasets.base_dataset import BaseDataset
@@ -138,12 +138,3 @@ class CharacterDataset(BaseDataset):
         self.read_data()
         self.tokenize()
         self.split()
-
-
-if __name__ == '__main__':
-    tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
-    preprocessor = BasePreprocessor()
-    from ml_analysis.config import MovieDataConfig
-
-    CD = CharacterDataset(tokenizer, MovieDataConfig, 'character_gender', preprocessor)
-    CD.prepare_dataset()

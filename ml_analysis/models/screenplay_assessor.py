@@ -4,7 +4,7 @@ from torch.nn import LSTM
 import torch.nn.functional as F
 
 
-class TransformerAssessor(nn.Module):
+class ScreenplayAssessor(nn.Module):
     def __init__(self, transformer_model, config):
         super().__init__()
         self.config = config
@@ -12,15 +12,17 @@ class TransformerAssessor(nn.Module):
         for param in self.transformer_model.parameters():
             param.requires_grad = True
 
-        self.cls_ff = nn.Linear(self.config['train']['embedding_size'], self.config['train']['num_classes'])
+        task = self.config['train']['task']
+        self.dropout = nn.Dropout(self.config['train']['dropout'])
+        self.cls_ff = nn.Linear(self.config['train']['embedding_size'], len(self.config['train']['classes_names'][task]))
         self.lstm = LSTM(self.config['train']['embedding_size'], self.config['train']['embedding_size'])
 
     def forward(self, batch):
         input_ids = batch['inputs'].to(self.config['train']['device'])
         input_masks = batch['attention_masks'].to(self.config['train']['device'])
 
-        bert_output = torch.zeros(self.config['train']['tr_batch_size'],
-                                  self.config['train']['max_scene_number'],
+        bert_output = torch.zeros(self.config['train']['batch_size']['train'],
+                                  self.config['tokenization']['screenplay_dataset']['max_scene_number'],
                                   self.config['train']['embedding_size'],
                                   device=self.config['train']['device'])
 
