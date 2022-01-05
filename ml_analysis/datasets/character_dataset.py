@@ -5,8 +5,6 @@ from torch.nn.utils.rnn import pad_sequence
 from utils.common import read_file, write_file
 from sklearn.model_selection import train_test_split
 from ml_analysis.ml_utils import remove_element_names
-from transformers import BertTokenizerFast
-from ml_analysis.datasets.base_preprocessor import BasePreprocessor
 from ml_analysis.datasets.base_dataset import BaseDataset
 
 
@@ -27,6 +25,12 @@ class CharacterDataset(BaseDataset):
             return {}
 
     def read_imdb_chars_texts(self):
+        """
+        Reads screenplay text chunks for each character separately.
+        Characters' text chunks contain their dialogs and descriptions of scenes where they participate in.
+
+        Returns: dict with keys as <imdb_id> and values as mappings from character name to text.
+        """
         imdb_chars_texts = {}
 
         for movie_name in os.listdir(self.config['paths']['character_texts_dir']):
@@ -42,11 +46,13 @@ class CharacterDataset(BaseDataset):
         return imdb_chars_texts
 
     def read_data(self):
+        """Reads characters' texts and labels for current task."""
         self.imdb_chars_to_labels = read_file(os.path.join(
             self.config['paths']['character_labels_dir'], self.task + '_labels.pickle'))
         self.imdb_chars_texts = self.read_imdb_chars_texts()
 
     def tokenize(self, to_load=False):
+        """Tokenizes, numericalizes, makes attention masks, labels and character ids."""
         self.input_ids, self.attention_masks, self.labels, self.char_ids = [], [], [], []
 
         if to_load:

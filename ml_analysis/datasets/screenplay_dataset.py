@@ -5,8 +5,6 @@ import torch
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from torch.nn.utils.rnn import pad_sequence
-from ml_analysis.datasets.base_preprocessor import BasePreprocessor
-from transformers import BertTokenizerFast
 
 from utils.common import read_file
 from ml_analysis.ml_utils import remove_element_names
@@ -22,6 +20,15 @@ class ScreenplayDataset(BaseDataset):
         super().__init__(tokenizer, config, task, preprocessor)
 
     def get_screenplay_scenes(self, screenplays):
+        """
+        Extracts scenes as text chunks split by scene heading elements.
+
+        Args:
+            screenplays (list): list of screenplays' texts labeled with screenplay_elements
+            from <self.config['screenplay_elements']>. Labels are made by bert_annotator.
+
+        Returns: list of lists with screenplay scenes for each screenplay
+        """
         screenplay_scenes, text = [], ''
         element_names = [x.name for x in self.config['screenplay_elements']]
         min_scene_length = self.config['tokenization']['nrof_scene_symbols']['min']
@@ -47,15 +54,15 @@ class ScreenplayDataset(BaseDataset):
 
         return screenplay_scenes
 
-    def make_screenplay_generator(self, task_to_label_mapping):
+    def make_screenplay_generator(self):
+        """Makes generator to be used when screenplays are not needed to be saved."""
         for file_name in os.listdir(self.config['paths']['screenplay_annotations_dir']):
             file_path = os.path.join(self.config['paths']['screenplay_annotations_dir'], file_name)
             yield read_file(file_path)
 
     def read_data(self, only_scenes=True):
-        task_to_label_mapping = read_file(self.config['paths']['screenplay_labels_mapping_path'])
         self.screenplays, self.imdb_ids = [], []
-        screenplays_generator = self.make_screenplay_generator(task_to_label_mapping)
+        screenplays_generator = self.make_screenplay_generator()
 
         for file_name in tqdm(os.listdir(self.config['paths']['screenplay_annotations_dir'])):
             imdb_id = file_name.split('_')[1].replace('.txt', '')
@@ -82,6 +89,7 @@ class ScreenplayDataset(BaseDataset):
                 self.labels.append(label)
 
     def tokenize(self):
+        """Tokenizes, numericalizes and makes attention masks."""
         self.inputs, self.attention_masks = [], []
 
         max_scene_number = self.config['tokenization']['screenplay_dataset']['max_scene_number']
@@ -101,7 +109,6 @@ class ScreenplayDataset(BaseDataset):
         inputs = pad_sequence(list(map(torch.tensor, inputs)), padding_value=0, batch_first=True)
         masks = pad_sequence(list(map(torch.tensor, masks)), padding_value=0, batch_first=True)
         labels = torch.LongTensor(labels)
-        # TODO: check for nans?
         imdb_ids = torch.LongTensor(list(map(int, imdb_ids)))
         return inputs, masks, labels, imdb_ids
 

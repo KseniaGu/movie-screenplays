@@ -5,6 +5,7 @@ import torch.nn.functional as F
 
 
 class ScreenplayAssessor(nn.Module):
+    """BERT-based siamese model for assessing long screenplay documents."""
     def __init__(self, transformer_model, config):
         super().__init__()
         self.config = config

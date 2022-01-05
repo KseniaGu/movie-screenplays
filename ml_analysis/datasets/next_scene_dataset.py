@@ -7,10 +7,27 @@ from ml_analysis.datasets.screenplay_dataset import ScreenplayDataset
 
 
 class NextSceneDataset(ScreenplayDataset):
+    """
+    Dataset for Next Scene Prediction (NScP) task.
+    """
+
     def __init__(self, tokenizer, config, task, preprocessor):
         super().__init__(tokenizer, config, task, preprocessor)
 
     def add_negative_example(self, i, screenplay, scene_pairs, labels):
+        """
+        Adds pairs of scenes:
+            1. from different (not neighbouring) parts of the same screenplay,
+            2. from different screenplays.
+
+        Args:
+            i (int): scene order number (within <screenplay>)
+            screenplay (str): currently observed screenplay
+            scene_pairs (list): list of already added scene pairs
+            labels (list): list of already added labels
+
+        Returns: updated <scene_pairs>, <labels>
+        """
         another_screenplay = random.choice((True, False))
 
         if i + 2 < len(screenplay) and not another_screenplay:
@@ -34,16 +51,18 @@ class NextSceneDataset(ScreenplayDataset):
         return scene_pairs, labels
 
     def make_scene_pairs_and_labels(self):
+        """Makes positive and negative examples of scene pairs."""
         self.scene_pairs, self.labels = [], []
 
         for screenplay in tqdm(self.screenplay_scenes):
-            for i in range(len(screenplay)):
+            for i in range(1, len(screenplay)):
                 self.scene_pairs.append([screenplay[i - 1], screenplay[i]])
                 self.labels.append(1)
 
                 self.scene_pairs, self.labels = self.add_negative_example(i, screenplay, self.scene_pairs, self.labels)
 
     def tokenize(self):
+        """Tokenizes, numericalizes, makes attention masks and token type ids."""
         self.inputs, self.token_type_ids, self.attention_masks = [], [], []
 
         max_nrof_examples = self.config['tokenization']['next_scene_dataset']['max_nrof_pairs']
