@@ -241,24 +241,20 @@ class Trainer:
         start_time = time()
         self.model.eval()
 
-        probs, predicts, trues, imdb_ids = [], [], [], []
+        probs, predicts, trues = [], [], []
         nrof_steps, val_loss, nrof_cor_predicts, nrof_samples = 0, 0., 0, 0
 
         for i, batch in tqdm(enumerate(validation_dataloader)):
             with torch.no_grad():
-                b_input_ids = batch[0].to(self.config['train']['device'])
-                b_input_mask = batch[1].to(self.config['train']['device'])
-                b_labels = batch[2].to(self.config['train']['device'])
-                b_imdb_ids = batch[3].to(self.config['train']['device'])
+                b_labels = batch['labels'].to(self.config['train']['device'])
 
-                output = self.model(b_input_ids, b_input_mask, b_labels)
+                output = self.model(batch)
                 val_loss += self.crit(output, b_labels).item()
 
                 sig_probs, predicted = torch.max(output.sigmoid(), -1)
                 probs.extend(sig_probs.cpu().detach().numpy().flatten().tolist())
                 predicts.extend(predicted.cpu().detach().numpy().flatten().tolist())
                 trues.extend(b_labels.cpu().detach().numpy().flatten().tolist())
-                imdb_ids.extend(b_imdb_ids.cpu().detach().numpy().flatten().tolist())
 
                 nrof_steps += 1
                 nrof_samples += len(b_labels)
